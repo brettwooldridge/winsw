@@ -56,58 +56,6 @@ namespace winsw
         }
 
         /// <summary>
-        /// Process the file copy instructions, so that we can replace files that are always in use while
-        /// the service runs.
-        /// </summary>
-        private void HandleFileCopies()
-        {
-            var file = _descriptor.BasePath + ".copies";
-            if (!File.Exists(file))
-                return; // nothing to handle
-
-            try
-            {
-                using (var tr = new StreamReader(file,Encoding.UTF8))
-                {
-                    string line;
-                    while ((line = tr.ReadLine()) != null)
-                    {
-                        LogEvent("Handling copy: " + line);
-                        string[] tokens = line.Split('>');
-                        if (tokens.Length > 2)
-                        {
-                            LogEvent("Too many delimiters in " + line);
-                            continue;
-                        }
-
-                        CopyFile(tokens[0], tokens[1]);
-                    }
-                }
-            }
-            finally
-            {
-                File.Delete(file);
-            }
-
-        }
-
-        /// <summary>
-        /// File replacement.
-        /// </summary>
-        private void CopyFile(string sourceFileName, string destFileName)
-        {
-            try
-            {
-                File.Delete(destFileName);
-                File.Move(sourceFileName, destFileName);
-            }
-            catch (IOException e)
-            {
-                LogEvent("Failed to copy :" + sourceFileName + " to " + destFileName + " because " + e.Message);
-            }
-        }
-
-        /// <summary>
         /// Starts a thread that protects the execution with a try/catch block.
         /// It appears that in .NET, unhandled exception in any thread causes the app to terminate
         /// http://msdn.microsoft.com/en-us/library/ms228965.aspx
@@ -209,7 +157,8 @@ namespace winsw
                 LogEvent("envar " + key + '=' + _envs[key]);
             }
 
-            HandleFileCopies();
+            FileOperations fops = new FileOperations(this, _descriptor);
+            fops.HandleFileCopies();
 
             // handle downloads
             foreach (Download d in _descriptor.Downloads)

@@ -72,6 +72,7 @@
     <Compile Include="Advapi32.cs" />
     <Compile Include="Download.cs" />
     <Compile Include="DynamicProxy.cs" />
+    <Compile Include="FileOperations.cs" />
     <Compile Include="Kernel32.cs" />
     <Compile Include="LogAppenders.cs" />
     <Compile Include="Main.cs">

@@ -68,6 +68,7 @@ namespace winsw
 
             // register the base directory as environment variable so that future expansions can refer to this.
             Environment.SetEnvironmentVariable("BASE", d.FullName);
+            Environment.SetEnvironmentVariable("WORKDIR", WorkingDirectory);
             // ditto for ID
             Environment.SetEnvironmentVariable("SERVICE_ID", Id);
             Environment.SetEnvironmentVariable("WINSW_EXECUTABLE", ExecutablePath);
