@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -23,7 +24,7 @@ namespace winsw
     ///
     ///      Note: the whitespace around '>' is optional.
     ///
-    ///      If source_path and dest_path are files, source_path overwrites dest_path:
+    ///      If source_path and dest_path are (existing) files, source_path overwrites dest_path:
     /// 
     ///          tmp\folder\foo.txt > other\xyz.txt
     ///
@@ -31,17 +32,17 @@ namespace winsw
     /// 
     ///          tmp\foo.txt > folder
     /// 
-    ///      If source_path is a folder, then:
+    ///      If source_path is a folder, when:
     /// 
     ///          foo\bar > folder
     /// 
-    ///          If 'folder' is an existing directory, the result will be a 'bar' directory inside
-    ///          the 'folder' directory, i.e. 'folder\bar'.  If the goal is to replace (overwrite) 'folder',
+    ///          If 'folder' is an existing directory, the result will be a 'bar' directory inside the
+    ///          'folder' directory, i.e. 'folder\bar'.  If the goal is to replace (overwrite) 'folder',
     ///          you should use the delete file operation (below) to remove 'folder' before the copy
     ///          operation.
     ///
-    ///          If 'folder' is not an existing directory, the result will be a that the 'bar' 
-    ///          subdirectory is moved/renamed to 'folder'.
+    ///          If 'folder' is not an existing directory, the result will be a that the 'bar' subdirectory
+    ///          is moved/renamed to 'folder'.
     ///
     ///      If source_path contains wildcard characters, all matching files are copied into dest_path folder:
     /// 
@@ -62,7 +63,7 @@ namespace winsw
     /// 
     ///         < tmp\somefile.txt
     /// 
-    ///      if target_path is a folder, it and its contents are deleted (recursively):
+    ///      If target_path is a folder, it and its contents are deleted (recursively):
     ///
     ///         < tmp\folder
     /// 
@@ -71,8 +72,18 @@ namespace winsw
     ///         < tmp\folder\abc*.dll
     ///
     ///   Execute (line starts with '@' character):
-    ///      @executable arg1 arg2
-    /// 
+    ///      @executable arg1 arg2 ...
+    ///
+    ///      The executable may be the name of an executable in the path, or a fully qualified path
+    ///      to the executable.  If the path to the executable contains spaces, the full path should
+    ///      be enclosed in quotation marks, like so:
+    ///
+    ///         @"C:\Program Files\Vendor\some.exe" arg1 arg2
+    ///
+    ///      The executable in question will be run from the service wrapper, and therefore should not
+    ///      interact with the desktop unless the service itself has permission to do so.
+    ///
+    ///      The service wrapper will wait indefinitely for the executable to terminate.
     /// ]]></code>
     /// </summary>
     class FileOperations
@@ -117,6 +128,7 @@ namespace winsw
                                 DeleteFileOrDirectory(CleanupFilename(line.Substring(1)));
                                 break;
                             case '@': // execute
+                                Execute(line.Substring(1));
                                 break;
                             default:
                                 var moveOp = GetMoveOperation(line);
@@ -275,6 +287,45 @@ namespace winsw
             {
                 WriteEvent("Move file " + sourceFileName + " overwrite skipped");
             }
+        }
+
+        private void Execute(string executable)
+        {
+            int len = executable.Length;
+            string program;
+            string args = "";
+            if (executable.StartsWith("\""))
+            {
+                int ndx = executable.IndexOf('"', 1);
+                if (ndx < 0)
+                {
+                    WriteEvent("Invalid executable declaration");
+                    return;
+                }
+                program = executable.Substring(0, Math.Min(ndx + 1, len)).Trim();
+                if (ndx + 1 < len)
+                {
+                    args = executable.Substring(ndx + 1).Trim();
+                }
+            }
+            else
+            {
+                int ndx = executable.Trim().IndexOf(' ', 1);
+                if (ndx < 0)
+                {
+                    program = executable.Trim();
+                }
+                else
+                {
+                    program = executable.Substring(0, Math.Min(ndx + 1, len)).Trim();
+                    args = executable.Substring(ndx + 1).Trim();
+                }
+            }
+
+            WriteEvent("Execute: " + executable);
+
+            Process p = Process.Start(program, args);
+            p.WaitForExit();
         }
 
         /// <summary>

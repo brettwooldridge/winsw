@@ -1,10 +1,49 @@
-﻿<configuration>
+<configuration>
   <id>winsw</id>
-  <name>Winsw test service(2)</name>
+  <name>Winsw test service</name>
   <description>This service is a do-nothing test app. Really.</description>
-  <download from="http://www.google.com/" to="%BASE%\index.html" />
-  <download from="http://www.nosuchhostexists.com/" to="%BASE%\dummy.html" />
 
-  <executable>C:\development\jdk6u7\bin\java.exe</executable>
-  <arguments>-classpath c:\cygwin\home\kohsuke\ws\hello-world\out\production\hello-world test.Main</arguments>
+  <executable>C:\Program Files\Net LineDancer\Java8\bin\javaw.exe</executable>
+  <env name="PATH" value="C:\Program Files\Net LineDancer\Perl\bin;%PATH%" />
+
+  <workingdirectory>C:\Program Files\Net LineDancer</workingdirectory>
+ 
+  <log mode="roll-by-size">
+     <sizeThreshold>4096</sizeThreshold>
+     <keepFiles>3</keepFiles>
+  </log> 
+
+  <!-- JVM Configuration -->
+  <argument>-server</argument>
+  <argument>-Xmx1024m</argument>
+  <argument>-XX:+OptimizeStringConcat</argument>
+  <argument>-XX:+UseParallelGC</argument>
+  <argument>-XX:+UseParallelOldGC</argument>
+  <argument>-XX:+HeapDumpOnOutOfMemoryError</argument>
+  <argument>-Djava.io.tmpdir=tmp</argument>
+
+  <!-- NetLD Properties -->
+  <argument>-Dorg.ziptie.net.ftpd.properties=ftpd.win.properties</argument>
+  <argument>-Dorg.ziptie.net.tftpd.properties=tftpd.win.properties</argument>
+  <argument>-Dorg.ziptie.net.dhcpd.properties=dhcpd.win.properties</argument>
+  <argument>-Dorg.ziptie.net.syslog.properties=syslog.win.properties</argument>
+  <argument>-Dorg.ziptie.log4j.properties=log4j.win.properties</argument>
+  <argument>-Dorg.tanukisoftware.wrapper.WrapperSimpleApp.maxStartMainWait=8</argument>
+  <argument>-Djdk.tls.rejectClientInitiatedRenegotiation=true</argument>
+
+  <!-- OSGi Properties -->
+  <argument>-Dosgi.configuration.area=osgi-config</argument>
+  <argument>-Dosgi.noShutdown=false</argument>
+  <argument>-Dosgi.install.area=./</argument>
+  <argument>-Dosgi.framework.activeThreadType=normal</argument>
+  <argument>-Declipse.enableStateSaver=false</argument>
+
+  <!-- Specify the Eclipse class that we need to run in order to kick off our OSGI server -->
+  <argument>-jar</argument>
+  <argument>core/org.eclipse.osgi_3.10.0.v20140606-1445.jar</argument>
+  <argument>org.eclipse.core.runtime.adaptor.EclipseStarter</argument>
+  <argument>-clean</argument>
+  <argument>-consoleLog</argument>
+  <argument>-application</argument>
+  <argument>org.ziptie.zap.bootstrap</argument>
 </configuration>

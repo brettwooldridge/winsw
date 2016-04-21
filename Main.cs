@@ -129,17 +129,17 @@ namespace winsw
             }
         }
 
-        private void WriteEvent(Exception exception)
+        internal void WriteEvent(Exception exception)
         {
             WriteEvent(exception.Message + "\nStacktrace:" + exception.StackTrace);
         }
 
-        private void WriteEvent(String message, Exception exception)
+        internal void WriteEvent(String message, Exception exception)
         {
             WriteEvent(message + "\nMessage:" + exception.Message + "\nStacktrace:" + exception.StackTrace);
         }
 
-        private void WriteEvent(String message)
+        internal void WriteEvent(String message)
         {
             string logfilename = Path.Combine(_descriptor.LogDirectory, _descriptor.BaseName + ".wrapper.log");
             StreamWriter log = new StreamWriter(logfilename, true);
